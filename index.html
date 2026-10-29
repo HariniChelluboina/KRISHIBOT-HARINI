@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>KrishiBot: a solar robot that sprays only where needed</title>
+<style>
+:root{--bg:#eaf1eb;--surf:#fbfdfb;--ink:#14231b;--mute:#52665a;--line:#c5d5ca;--leaf:#3f8f4e;--rust:#c2462d;--amber:#b9831a;--violet:#6f62a8;--idle:#d6e0d9;--hero:#14231b;--herotx:#eaf1eb;--sun:#e8b93c;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1a13;--surf:#17251c;--ink:#e6efe8;--mute:#9bb0a2;--line:#2b3f32;--leaf:#5fb36f;--rust:#e8745a;--amber:#e0b04a;--violet:#a79ae0;--idle:#22352a;--hero:#0a120d;--herotx:#e6efe8;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1a13;--surf:#17251c;--ink:#e6efe8;--mute:#9bb0a2;--line:#2b3f32;--leaf:#5fb36f;--rust:#e8745a;--amber:#e0b04a;--violet:#a79ae0;--idle:#22352a;--hero:#0a120d;--herotx:#e6efe8;color-scheme:dark}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:inherit}
+.hero{background:var(--hero);color:var(--herotx);padding:56px 20px 64px}
+.in{max-width:960px;margin:0 auto}
+nav{display:flex;gap:18px;flex-wrap:wrap;font-size:15px;margin-bottom:48px;opacity:.9}
+nav a{text-decoration:none;border-bottom:1px solid transparent}nav a:hover{border-color:currentColor}
+.hero h1{font:600 clamp(40px,9vw,76px)/1 Georgia,"Iowan Old Style",serif;margin:0 0 14px}
+.hero h1 span{color:var(--sun)}
+.hero p{font-size:clamp(18px,3vw,22px);max-width:34em;margin:0 0 26px;opacity:.92}
+.cta{display:inline-block;padding:12px 22px;border-radius:8px;background:var(--sun);color:#14231b;font-weight:600;text-decoration:none}
+section{padding:54px 20px}
+section.alt{background:var(--surf);border-block:1px solid var(--line)}
+h2{font:600 clamp(26px,5vw,36px)/1.15 Georgia,serif;margin:0 0 12px}
+.lead{color:var(--mute);max-width:44em;margin:0 0 28px}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:22px;counter-reset:s;padding:0;list-style:none;margin:0}
+.steps li{counter-increment:s;border-top:3px solid var(--leaf);padding-top:10px}
+.steps li::before{content:counter(s);font:600 30px Georgia,serif;color:var(--leaf);display:block}
+.steps b{display:block;margin-bottom:2px}
+.steps span{color:var(--mute);font-size:15px}
+.demo{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:20px}
+@media(max-width:720px){.demo{grid-template-columns:1fr}}
+.bar{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14px;margin-bottom:12px;color:var(--mute)}.bar b{color:var(--ink)}
+.field{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;padding:10px;background:var(--bg);border:1px solid var(--line);border-radius:10px}
+.cell{aspect-ratio:1;border:2px solid transparent;border-radius:6px;background:var(--idle);padding:0;position:relative;font:inherit}
+.cell.on{cursor:pointer}.cell.H{background:var(--leaf)}.cell.R{background:var(--rust)}.cell.A{background:var(--amber)}.cell.N{background:var(--violet)}
+.cell.sel{border-color:var(--ink)}.cell.bot::after{content:"";position:absolute;inset:28%;border-radius:50%;background:var(--ink);box-shadow:0 0 0 3px var(--surf)}
+.cell:focus-visible,button:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--mute);margin:10px 0}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px}
+.act{font:inherit;font-weight:600;padding:9px 16px;border-radius:8px;border:1px solid var(--ink);background:var(--ink);color:var(--bg);cursor:pointer;margin-right:8px}
+.act.alt{background:transparent;color:var(--ink)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 14px}
+.stats div{border-left:3px solid var(--line);padding-left:9px;font-size:13px;color:var(--mute)}.stats strong{display:block;font-size:24px;color:var(--ink)}
+.lang{display:flex;gap:6px;margin:12px 0 6px}
+.lang button{font:inherit;font-size:14px;padding:4px 11px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
+.lang button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.advice{background:var(--bg);border-radius:8px;padding:10px 12px}
+.small{font-size:14px;color:var(--mute)}
+.pts{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:26px 34px}
+.pts h3{font:600 20px Georgia,serif;margin:0 0 4px}.pts p{margin:0;color:var(--mute)}
+.road{list-style:none;padding:0;margin:0;border-left:3px solid var(--leaf)}
+.road li{padding:0 0 18px 18px;position:relative}.road li::before{content:"";position:absolute;left:-8px;top:8px;width:13px;height:13px;border-radius:50%;background:var(--bg);border:3px solid var(--leaf)}
+.road b{display:block}.road span{color:var(--mute);font-size:15px}
+footer{padding:36px 20px;background:var(--hero);color:var(--herotx);font-size:15px}
+footer p{margin:2px 0;opacity:.9}
+@media(prefers-reduced-motion:no-preference){.cell{transition:background .3s}}
+</style>
+</head>
+<body>
+<header class="hero"><div class="in">
+<nav aria-label="Sections"><a href="#how">How it works</a><a href="#demo">Try the demo</a><a href="#why">Why it’s different</a><a href="#next">Roadmap</a></nav>
+<h1>Krishi<span>Bot</span></h1>
+<p>A solar-powered robot that walks the field, checks each plant, and tells the farmer exactly which plants need spraying, in Hindi, Punjabi or English.</p>
+<a class="cta" href="#demo">Try the demo scan</a>
+</div></header>
+
+<section id="how"><div class="in">
+<h2>How it works</h2>
+<p class="lead">Farmers often spray a whole field when only a few plants are affected. KrishiBot finds those plants first.</p>
+<ol class="steps">
+<li><b>Powered by the sun</b><span>A solar panel charges the battery that runs the robot.</span></li>
+<li><b>Walks every row</b><span>It moves in a snake pattern so no plant is missed.</span></li>
+<li><b>Checks each plant</b><span>A camera and image model name the problem: disease, pest or nutrient shortage.</span></li>
+<li><b>Advises the farmer</b><span>A field map and short advice in the farmer’s own language.</span></li>
+</ol>
+</div></section>
+
+<section id="demo" class="alt"><div class="in">
+<h2>Try a demo scan</h2>
+<p class="lead">A simulated wheat field of 24 plants. Press start and watch the robot work.</p>
+<div class="demo">
+<div>
+<div class="bar" aria-live="polite"><span>Solar <b id="sol">0 W</b></span><span>Battery <b id="bat">78%</b></span><span>Status <b id="st">Idle</b></span></div>
+<div class="field" id="field"></div>
+<div class="legend"><span><i style="background:var(--leaf)"></i>Healthy</span><span><i style="background:var(--rust)"></i>Yellow rust</span><span><i style="background:var(--amber)"></i>Aphids</span><span><i style="background:var(--violet)"></i>Nitrogen shortage</span></div>
+<button class="act" id="go">Start scan</button><button class="act alt" id="reset">Reset</button>
+</div>
+<div>
+<div class="stats">
+<div><strong id="s1">0 / 24</strong>plants scanned</div><div><strong id="s2">0</strong>issues found</div>
+<div><strong id="s3">0</strong>plants to spray</div><div><strong id="s4">–</strong>spray saved</div></div>
+<div id="detail">Select a scanned plant to see what the robot found.</div>
+<div class="lang" role="group" aria-label="Advice language"><button aria-pressed="true" data-l="en">English</button><button aria-pressed="false" data-l="hi">हिन्दी</button><button aria-pressed="false" data-l="pa">ਪੰਜਾਬੀ</button></div>
+<div class="advice" id="adv">Advice appears here in the farmer’s language.</div>
+<p class="small">Simulated readings. Always confirm the product and dose with your local KVK or agriculture officer.</p>
+</div></div>
+</div></section>
+
+<section id="why"><div class="in">
+<h2>Why it’s different</h2>
+<p class="lead">The technology is familiar. The decisions are what set KrishiBot apart.</p>
+<div class="pts">
+<div><h3>Plants, not fields</h3><p>It marks individual plants for treatment instead of advising a whole-field spray.</p></div>
+<div><h3>Knows when not to spray</h3><p>A nitrogen shortage looks like disease. KrishiBot flags it as a fertiliser issue, so no pesticide is used.</p></div>
+<div><h3>Organic first</h3><p>For pests like aphids it suggests a neem-based spray before any chemical.</p></div>
+<div><h3>Speaks the farmer’s language</h3><p>Advice in English, Hindi and Punjabi, so it is usable without English.</p></div>
+<div><h3>One crop, one region</h3><p>Focusing on wheat in Punjab allows training on real local field photos.</p></div>
+<div><h3>Safe by design</h3><p>No doses are printed. Farmers are sent to their KVK to confirm the product and amount.</p></div>
+</div></div></section>
+
+<section id="next" class="alt"><div class="in">
+<h2>Roadmap</h2>
+<p class="lead">The page above is a working prototype. Detection and hardware come next.</p>
+<ul class="road">
+<li><b>Collect field photos</b><span>Gather and label real wheat leaf images from local fields.</span></li>
+<li><b>Train the model</b><span>Run a small classifier on a Raspberry Pi class board.</span></li>
+<li><b>Build the robot</b><span>Chassis, solar charging, and a spray unit that treats only marked plants.</span></li>
+<li><b>Pilot with farmers</b><span>Test in a small plot with a KVK and let farmers correct wrong diagnoses.</span></li>
+</ul>
+</div></section>
+
+<footer><div class="in">
+<p><b>KrishiBot</b>, a student project</p>
+<p>Chelluboina Harini · Roll No 71 · Section K3P26AV</p>
+</div></footer>
+
+<script>
+var MAP="HHRHHN"+"HAHHRR"+"NHHAHH"+"HHHRHH";
+var D={H:{n:"Healthy",s:"Leave as is",a:{en:"No problem found. No spraying needed.",hi:"कोई समस्या नहीं मिली। छिड़काव की ज़रूरत नहीं।",pa:"ਕੋਈ ਸਮੱਸਿਆ ਨਹੀਂ ਮਿਲੀ। ਛਿੜਕਾਅ ਦੀ ਲੋੜ ਨਹੀਂ।"}},
+R:{n:"Yellow rust",s:"Spot spray, then re-scan in a week",a:{en:"Yellow rust found. Spot-treat these plants only; confirm the fungicide with your KVK.",hi:"पीला रतुआ मिला। केवल इन्हीं पौधों पर छिड़काव करें; दवा की पुष्टि KVK से करें।",pa:"ਪੀਲੀ ਕੁੰਗੀ ਮਿਲੀ। ਸਿਰਫ਼ ਇਨ੍ਹਾਂ ਪੌਦਿਆਂ ਉੱਤੇ ਛਿੜਕਾਅ ਕਰੋ; ਦਵਾਈ ਦੀ ਪੁਸ਼ਟੀ KVK ਤੋਂ ਕਰੋ।"}},
+A:{n:"Aphids",s:"Neem-based spray first",a:{en:"Aphids found. Try a neem-based spray first; no chemical needed yet.",hi:"माहू मिला। पहले नीम आधारित स्प्रे आज़माएं; अभी रसायन की ज़रूरत नहीं।",pa:"ਚੇਪਾ ਮਿਲਿਆ। ਪਹਿਲਾਂ ਨਿੰਮ ਵਾਲਾ ਸਪਰੇਅ ਵਰਤੋ; ਹਾਲੇ ਰਸਾਇਣ ਦੀ ਲੋੜ ਨਹੀਂ।"}},
+N:{n:"Nitrogen shortage",s:"Check fertiliser, no spray",a:{en:"Looks like a nitrogen shortage, not a disease. No pesticide needed; check fertiliser.",hi:"यह नाइट्रोजन की कमी लगती है, रोग नहीं। कीटनाशक की ज़रूरत नहीं; खाद जाँचें।",pa:"ਇਹ ਨਾਈਟ੍ਰੋਜਨ ਦੀ ਘਾਟ ਲੱਗਦੀ ਹੈ, ਬਿਮਾਰੀ ਨਹੀਂ। ਕੀਟਨਾਸ਼ਕ ਦੀ ਲੋੜ ਨਹੀਂ; ਖਾਦ ਜਾਂਚੋ।"}}};
+var lang="en",sel=-1,pos=-1,timer=null,scanned=0,order=[],cells=[],field=document.getElementById("field");
+function $(i){return document.getElementById(i)}
+for(var r=0;r<4;r++)for(var c=0;c<6;c++)order.push(r*6+(r%2?5-c:c));
+for(var i=0;i<24;i++){var b=document.createElement("button");b.className="cell";b.disabled=true;b.setAttribute("aria-label","Plant "+(i+1)+", not scanned");(function(i){b.onclick=function(){pick(i)}})(i);field.appendChild(b);cells.push(b)}
+function stats(){var issues=0,spray=0;order.slice(0,scanned).forEach(function(i){var k=MAP[i];if(k!=="H")issues++;if(k==="R"||k==="A")spray++});
+$("s1").textContent=scanned+" / 24";$("s2").textContent=issues;$("s3").textContent=spray;$("s4").textContent=scanned?Math.round((1-spray/scanned)*100)+"%":"–"}
+function pick(i){sel=i;cells.forEach(function(c,j){c.classList.toggle("sel",j===i)});var k=MAP[i],d=D[k],sev=k==="H"?0:10+(i*13)%50,conf=82+(i*7)%15;
+$("detail").innerHTML="<b>Plant "+(i+1)+": "+d.n+"</b><br>Confidence "+conf+"%"+(k==="H"?"":", leaf area affected about "+sev+"%")+"<br>Next step: "+d.s;$("adv").textContent=d.a[lang]}
+function step(){if(pos>=0)cells[order[pos]].classList.remove("bot");pos++;
+if(pos>=24){clearInterval(timer);$("st").textContent="Scan complete";$("sol").textContent="0 W";$("go").disabled=false;return}
+var i=order[pos],k=MAP[i];cells[i].classList.add("bot","on",k);cells[i].disabled=false;cells[i].setAttribute("aria-label","Plant "+(i+1)+", "+D[k].n);
+scanned=pos+1;stats();$("sol").textContent=(120+Math.round(Math.sin(pos/3)*18))+" W";$("bat").textContent=Math.min(100,78+Math.floor(pos/3))+"%";$("st").textContent="Scanning row "+(Math.floor(pos/6)+1)}
+function reset(){clearInterval(timer);pos=-1;scanned=0;sel=-1;cells.forEach(function(c,i){c.className="cell";c.disabled=true;c.setAttribute("aria-label","Plant "+(i+1)+", not scanned")});
+$("go").disabled=false;$("st").textContent="Idle";$("sol").textContent="0 W";$("bat").textContent="78%";$("detail").textContent="Select a scanned plant to see what the robot found.";$("adv").textContent="Advice appears here in the farmer’s language.";stats()}
+$("go").onclick=function(){reset();$("go").disabled=true;timer=setInterval(step,380)};$("reset").onclick=reset;
+document.querySelectorAll(".lang button").forEach(function(b){b.onclick=function(){lang=b.dataset.l;document.querySelectorAll(".lang button").forEach(function(x){x.setAttribute("aria-pressed",x===b?"true":"false")});if(sel>=0)$("adv").textContent=D[MAP[sel]].a[lang]}});
+stats();
+</script>
+</body>
+</html>
